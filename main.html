@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tic Tac Toe</title>
+
   <style>
-    /* ===== page layout ===== */
     body {
       font-family: "Segoe UI", Roboto, Arial, sans-serif;
       display: flex;
@@ -28,19 +28,25 @@
       letter-spacing: 2px;
     }
 
-    /* ===== initial form ===== */
+    /* Input form */
     .players-form {
       display: inline-block;
       text-align: left;
       margin-bottom: 20px;
     }
+
     .field {
       display:flex;
       align-items:center;
       gap:12px;
       margin: 10px 0;
     }
-    .field label { width: 84px; font-size: 18px; }
+
+    .field label {
+      width: 84px;
+      font-size: 18px;
+    }
+
     .field input[type="text"] {
       width: 300px;
       padding: 8px 10px;
@@ -48,6 +54,7 @@
       border: 2px solid #222;
       border-radius: 2px;
     }
+
     #submit {
       display:block;
       width: 240px;
@@ -60,30 +67,29 @@
       background:#fff;
     }
 
-    /* ===== message ===== */
+    /* Message */
     .message {
       font-size: 22px;
       font-weight: 600;
       margin: 16px 0;
-      color: #111;
       min-height: 36px;
     }
 
-    /* ===== board ===== */
+    /* Board section */
     .board-wrap {
-      display:none; /* shown after submit */
+      display:none;
       margin-top: 6px;
     }
+
     .board {
       width: 320px;
       height: 320px;
       margin: 18px auto;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 0;
       border: 4px solid #222;
     }
+
     .cell {
       display:flex;
       align-items:center;
@@ -92,34 +98,38 @@
       font-weight: 700;
       border-right: 2px solid #222;
       border-bottom: 2px solid #222;
-      user-select:none;
-      cursor: pointer;
       background:#ffd9e0;
-      min-width: 106px;
-      min-height: 106px;
+      user-select:none;
+      cursor:pointer;
     }
-    /* fix borders on right and bottom edges */
+
+    /* Remove extra borders */
     .cell:nth-child(3),
     .cell:nth-child(6),
     .cell:nth-child(9) { border-right: none; }
+
     .cell:nth-child(7),
     .cell:nth-child(8),
     .cell:nth-child(9) { border-bottom: none; }
 
-    /* winner highlight */
-    .cell.win { background: rebeccapurple; color: #fff; }
-
-    /* X / O styles */
+    /* Styling for X/O */
     .cell.x { color: #111; }
     .cell.o { color: #111; }
 
-    /* controls */
+    /* Winner highlight */
+    .cell.win {
+      background: rebeccapurple;
+      color: #fff;
+    }
+
+    /* Bottom buttons */
     .controls {
       display:flex;
       justify-content:center;
       gap:12px;
       margin-top: 8px;
     }
+
     .btn {
       padding: 10px 16px;
       border-radius: 8px;
@@ -130,11 +140,12 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1 class="title">Tic Tac Toe</h1>
 
-    <!-- initial inputs -->
+    <!-- Player Input Form -->
     <div class="players-form" id="playersForm">
       <div class="field">
         <label for="player-1">Player 1</label>
@@ -147,13 +158,12 @@
       <button id="submit">Start Game</button>
     </div>
 
-    <!-- message area -->
+    <!-- Message -->
     <div class="message" id="message"></div>
 
-    <!-- board (hidden initially) -->
+    <!-- Game Board -->
     <div class="board-wrap" id="boardWrap">
       <div class="board" id="board">
-        <!-- cells with ids 1..9 as required -->
         <div class="cell" id="1" data-index="0"></div>
         <div class="cell" id="2" data-index="1"></div>
         <div class="cell" id="3" data-index="2"></div>
@@ -173,144 +183,136 @@
   </div>
 
   <script>
-    // unique variable names (user preference)
-    const player1InputEl = document.getElementById('player-1');
-    const player2InputEl = document.getElementById('player-2');
-    const submitBtnEl = document.getElementById('submit');
-    const playersFormEl = document.getElementById('playersForm');
-    const boardWrapEl = document.getElementById('boardWrap');
-    const messageEl = document.getElementById('message');
-    const restartBtnEl = document.getElementById('restart');
-    const backBtnEl = document.getElementById('backToForm');
-    const cellsNodeList = Array.from(document.querySelectorAll('.cell'));
+    const player1InputEl = document.getElementById("player-1");
+    const player2InputEl = document.getElementById("player-2");
+    const submitBtnEl = document.getElementById("submit");
+    const playersFormEl = document.getElementById("playersForm");
 
-    // game state
-    let boardState = ['', '', '', '', '', '', '', '', '']; // 0..8
-    let activeSymbol = 'X'; // X starts (player1)
+    const boardWrapEl = document.getElementById("boardWrap");
+    const messageEl = document.getElementById("message");
+
+    const restartBtnEl = document.getElementById("restart");
+    const backBtnEl = document.getElementById("backToForm");
+
+    const cells = Array.from(document.querySelectorAll(".cell"));
+
+    let boardState = ["", "", "", "", "", "", "", "", ""];
+    let activeSymbol = "X";
     let isGameActive = false;
-    let names = { X: '', O: '' };
 
-    const winningCombinations = [
-      [0,1,2], [3,4,5], [6,7,8], // rows
-      [0,3,6], [1,4,7], [2,5,8], // cols
-      [0,4,8], [2,4,6]           // diagonals
+    let names = { X: "", O: "" };
+
+    const winningPatterns = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
     ];
 
-    // helpers
-    function showMessage(text) {
-      messageEl.textContent = text;
+    function showMessage(txt) {
+      messageEl.textContent = txt;
     }
 
-    function startNewGame() {
-      boardState.fill('');
-      activeSymbol = 'X';
+    function startGame() {
+      boardState.fill("");
+      activeSymbol = "X";
       isGameActive = true;
-      cellsNodeList.forEach(cell => {
-        cell.textContent = '';
-        cell.classList.remove('win','x','o');
+
+      cells.forEach(c => {
+        c.textContent = "";
+        c.className = "cell";
       });
+
       showMessage(`${names.X}, you're up`);
     }
 
-    function endGameWithWinner(winnerSymbol, winningIndexes) {
+    function endWin(symbol, combo) {
       isGameActive = false;
-      // highlight winning cells
-      winningIndexes.forEach(i => {
-        const el = cellsNodeList[i];
-        el.classList.add('win');
-      });
-      const winnerName = winnerSymbol === 'X' ? names.X || 'Player 1' : names.O || 'Player 2';
+      combo.forEach(i => cells[i].classList.add("win"));
+
+      const winnerName = symbol === "X" ? names.X : names.O;
       showMessage(`${winnerName}, congratulations you won!`);
     }
 
-    function endGameWithDraw() {
+    function endDraw() {
       isGameActive = false;
       showMessage("It's a draw!");
     }
 
-    function checkForResult() {
-      for (const combo of winningCombinations) {
+    function checkWinner() {
+      for (const combo of winningPatterns) {
         const [a,b,c] = combo;
-        if (boardState[a] && boardState[a] === boardState[b] && boardState[b] === boardState[c]) {
+        if (
+          boardState[a] &&
+          boardState[a] === boardState[b] &&
+          boardState[b] === boardState[c]
+        ) {
           return { winner: boardState[a], combo };
         }
       }
-      if (boardState.every(v => v !== '')) {
+
+      if (boardState.every(v => v !== "")) {
         return { draw: true };
       }
+
       return null;
     }
 
-    // cell click handler
-    function onCellClick(e) {
+    function handleCellClick(e) {
       if (!isGameActive) return;
-      const cellEl = e.currentTarget;
-      const idx = Number(cellEl.dataset.index);
-      if (boardState[idx] !== '') return; // occupied
+
+      const cell = e.target;
+      const idx = Number(cell.dataset.index);
+
+      if (boardState[idx] !== "") return;
 
       boardState[idx] = activeSymbol;
-      cellEl.textContent = activeSymbol;
-      cellEl.classList.add(activeSymbol === 'X' ? 'x' : 'o');
+      cell.textContent = activeSymbol;
+      cell.classList.add(activeSymbol.toLowerCase());
 
-      const result = checkForResult();
-      if (result && result.winner) {
-        endGameWithWinner(result.winner, result.combo);
-        return;
-      } else if (result && result.draw) {
-        endGameWithDraw();
-        return;
+      const result = checkWinner();
+      if (result?.winner) {
+        return endWin(result.winner, result.combo);
+      }
+      if (result?.draw) {
+        return endDraw();
       }
 
-      // switch turn
-      activeSymbol = activeSymbol === 'X' ? 'O' : 'X';
-      const nextName = activeSymbol === 'X' ? (names.X || 'Player 1') : (names.O || 'Player 2');
+      activeSymbol = activeSymbol === "X" ? "O" : "X";
+      const nextName = activeSymbol === "X" ? names.X : names.O;
       showMessage(`${nextName}, you're up`);
     }
 
-    // attach listeners to cells
-    cellsNodeList.forEach(cell => cell.addEventListener('click', onCellClick));
+    cells.forEach(c => c.addEventListener("click", handleCellClick));
 
-    // submit -> show board
-    submitBtnEl.addEventListener('click', function () {
-      const rawP1 = player1InputEl.value.trim();
-      const rawP2 = player2InputEl.value.trim();
-      if (!rawP1 || !rawP2) {
-        // simple validation
-        alert('Please enter names for both players.');
+    submitBtnEl.addEventListener("click", () => {
+      const p1 = player1InputEl.value.trim();
+      const p2 = player2InputEl.value.trim();
+
+      if (!p1 || !p2) {
+        alert("Please enter both player names.");
         return;
       }
-      names.X = rawP1;
-      names.O = rawP2;
-      // hide form, show board and start
-      playersFormEl.style.display = 'none';
-      boardWrapEl.style.display = 'block';
-      startNewGame();
+
+      names.X = p1;
+      names.O = p2;
+
+      playersFormEl.style.display = "none";
+      boardWrapEl.style.display = "block";
+
+      startGame();
     });
 
-    // restart game with same players
-    restartBtnEl.addEventListener('click', function () {
-      startNewGame();
-    });
+    restartBtnEl.addEventListener("click", startGame);
 
-    // go back to form to change names
-    backBtnEl.addEventListener('click', function () {
-      boardWrapEl.style.display = 'none';
-      playersFormEl.style.display = 'block';
-      showMessage('');
-      // keep previous names in inputs for convenience
+    backBtnEl.addEventListener("click", () => {
+      boardWrapEl.style.display = "none";
+      playersFormEl.style.display = "block";
+      showMessage("");
+
       player1InputEl.value = names.X;
       player2InputEl.value = names.O;
-      isGameActive = false;
-    });
 
-    // optionally start if user presses Enter in either input while form shown
-    [player1InputEl, player2InputEl].forEach(inp => {
-      inp.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter') {
-          ev.preventDefault();
-          submitBtnEl.click();
-        }
-      });
+      isGameActive = false;
     });
   </script>
 </body>
